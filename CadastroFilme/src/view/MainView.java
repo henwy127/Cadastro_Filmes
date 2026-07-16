@@ -24,8 +24,8 @@ public class MainView extends JFrame {
     private AtorView atorView;
 
     public MainView() {
-        setUndecorated(true); // remove barra nativa do SO
-        setSize(560, 460);
+        setUndecorated(true); 
+        setSize(560, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(null);
@@ -37,7 +37,7 @@ public class MainView extends JFrame {
         Color BTN_HOVER_MIN = new Color(70, 130, 180);
 
         // =========================
-        // Barra de título custom
+        // Barra de título customizada
         // =========================
         JPanel titleBar = new JPanel(null);
         titleBar.setBackground(BAR_BG);
@@ -122,10 +122,10 @@ public class MainView extends JFrame {
         // =========================
         JPanel body = new JPanel(null);
         body.setBackground(DARK_BG);
-        body.setBounds(0, 32, 560, 428);
+        body.setBounds(0, 32, 560, 568);
 
         JTabbedPane abas = new JTabbedPane();
-        abas.setBounds(10, 10, 540, 408);
+        abas.setBounds(10, 10, 540, 548);
         abas.setBackground(new Color(45, 45, 45));
         abas.setForeground(new Color(235, 235, 235));
 
@@ -153,8 +153,8 @@ public class MainView extends JFrame {
         return atorView;
     }
 
-    // Main apenas para testar a tela do pacote view
+   
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MainView().setVisible(true));
+        SwingUtilities.invokeLater(() -> new MainView().setVisible(true));  //Não funciona completamente, somente a parte visual
     }
 }

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.*;
 
 import model.Filme;
+import model.Genero;
+import model.Atores;
 
 public class FilmeRepository {
       private final List<Filme> filmes = new ArrayList<>();
@@ -19,6 +21,31 @@ public class FilmeRepository {
     	  return filmes;
       }
       
+      public boolean GeneroUtil(Genero genero) {
+      	return filmes.stream()
+      			.anyMatch(f-> f.getGenero().getId() == genero.getId());
+      }
+      
+      public boolean AtorUtil(Atores ator) {
+
+    	    return filmes.stream()
+    	            .anyMatch(f -> 
+    	                f.getAtores().stream()
+    	                .anyMatch(a -> a.getId() == ator.getId())
+    	            );
+    	}
+      
+      public Filme buscarPorId(Integer id) {
+
+    	    for (Filme filme : filmes) {
+    	        if (filme.getId() == id) {
+    	            return filme;
+    	        }
+    	    }
+
+    	    throw new RuntimeException("Filme não encontrado.");
+    	}
+      
       public void atualizar(Filme filme) {
           Optional<Filme> encontrado = filmes.stream()
         		  .filter(f -> f.getId() == filme.getId())
@@ -29,6 +56,7 @@ public class FilmeRepository {
               existente.setTitulo(filme.getTitulo());
               existente.setGenero(filme.getGenero());
               existente.setDuracao(filme.getDuracao());
+              existente.setAtores(filme.getAtores());
           } else {
               throw new RuntimeException("Filme não encontrado para atualização.");
           }

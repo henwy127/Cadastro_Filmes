@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import model.Filme;
 import model.Genero;
 
 public class GeneroRepository {
@@ -16,6 +17,43 @@ public class GeneroRepository {
         generos.add(genero);
     }
 
+    public boolean existeNome(String nome, Integer idIgnorado) {
+
+        for (Genero genero : generos) {
+
+            if (genero.getNome().equalsIgnoreCase(nome.trim())
+                    && genero.getId() != idIgnorado) {
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+    
+    public boolean existeNome(String nome) {
+
+        for (Genero genero : generos) {
+
+            if (genero.getNome().equalsIgnoreCase(nome.trim())) {
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+    
+    public Genero buscaPorId(Integer id) {
+    	for (Genero genero : generos) {
+	        if (genero.getId() == id) {
+	            return genero;
+	        }
+	    }
+	    throw new RuntimeException("Gênero não encontrado.");
+	}
+    
+    
     public void atualizar(Genero genero) {
         Optional<Genero> encontrado = generos.stream()
         		.filter(g -> g.getId() == genero.getId())

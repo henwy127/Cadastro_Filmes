@@ -3,6 +3,7 @@ package controller;
 import javax.swing.JOptionPane;
 
 import model.Genero;
+import repository.FilmeRepository;
 import repository.GeneroRepository;
 import view.GeneroView;
 
@@ -10,10 +11,20 @@ public class GeneroController {
 
     private final GeneroView view;
     private final GeneroRepository repository;
+    private FilmeController filmeController;
+    private FilmeRepository filmeRepository;
+    
 
-    public GeneroController(GeneroView view, GeneroRepository repository) {
+    public GeneroController(
+            GeneroView view,
+            GeneroRepository repository,
+            FilmeController filmeController,
+            FilmeRepository filmeRepository) {
+
         this.view = view;
         this.repository = repository;
+        this.filmeController = filmeController;
+        this.filmeRepository = filmeRepository;
 
         configurarEventos();
         montarTabela();
@@ -22,7 +33,15 @@ public class GeneroController {
 
     private void configurarEventos() {
         view.getNovoButton().addActionListener(e -> novoGenero());
-        view.getSalvarButton().addActionListener(e -> salvarGenero());
+        view.getSalvarButton().addActionListener(e -> {
+            try {
+                salvarGenero();
+            } catch (IllegalArgumentException ex) {
+                view.mostrarErro(ex.getMessage());
+            } catch (Exception ex) {
+                view.mostrarErro("Erro inesperado ao salvar gênero.");
+            }
+        });
         view.getExcluirButton().addActionListener(e -> excluirGenero());
 
         view.getGenerosTable().getSelectionModel().addListSelectionListener(e -> {
@@ -35,7 +54,7 @@ public class GeneroController {
         view.getIdTextField().setText("");
         view.getNomeTextField().setText("");
     }
-
+ 
     public void novoGenero() {
         limparCampos();
         view.getGenerosTable().clearSelection();
@@ -47,17 +66,29 @@ public class GeneroController {
         String nome = view.getNomeTextField().getText().trim();
 
         if (nome.isEmpty()) {
-            view.mostrarErro("O nome do gênero é obrigatório.");
-            return;
+        	throw new IllegalArgumentException("O nome do gênero é obrigatório.");
         }
 
         try {
             if (idTexto.isEmpty()) {
+            	
+            	if (repository.existeNome(nome)) {
+            		throw new IllegalArgumentException("Já existe um gênero com esse nome.");
+                }
+            	
                 Genero novo = new Genero();
                 novo.setNome(nome);
                 repository.salvar(novo);
+                
+                filmeController.atualizarComboGeneros();
             } else {
+            	
                 Integer id = Integer.parseInt(idTexto);
+                
+                if (repository.existeNome(nome, id)) {
+                	throw new IllegalArgumentException("Já existe um gênero com esse nome.");
+                }
+                
                 Genero existente = new Genero();
                 existente.setId(id);
                 existente.setNome(nome);
@@ -101,7 +132,15 @@ public class GeneroController {
         if (opcao != JOptionPane.YES_OPTION) return;
 
         try {
+        	
+        	Genero genero = repository.buscaPorId(id);
+        	
+        	if(filmeRepository.GeneroUtil(genero)) {
+        		throw new IllegalArgumentException("Não é possível excluir esse gênero pois ele está sendo usado por um filme.");
+        	}
+        	
             repository.excluirPorId(id);
+            filmeController.atualizarComboGeneros();
             montarTabela();
             novoGenero();
             JOptionPane.showMessageDialog(view, "Gênero excluído com sucesso!");

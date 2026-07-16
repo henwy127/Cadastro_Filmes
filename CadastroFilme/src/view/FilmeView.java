@@ -3,22 +3,31 @@ package view;
 import java.awt.Color;
 import java.awt.Font;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.table.DefaultTableModel;
+
+import model.Genero;
+import model.Atores;
 
 public class FilmeView extends JPanel {
     private static final long serialVersionUID = 1L;
 
     private JTextField tituloTextField;
-    private JTextField generoTextField;
+    private JComboBox<Genero> generoComboBox;
     private JTable filmestable;
     private JButton novoButton;
     private JButton salvarButton;
@@ -26,6 +35,8 @@ public class FilmeView extends JPanel {
     private JSpinner duracaoSpinner;
     private DefaultTableModel filmesTableModel;
     private JTextField IDtextField;
+    private JList<Atores> atoresList;
+    private DefaultListModel<Atores> atoresListModel;
 
     private static final Color DARK_BG = new Color(30, 30, 30);
     private static final Color DARK_PANEL = new Color(45, 45, 45);
@@ -80,13 +91,28 @@ public class FilmeView extends JPanel {
         tituloTextField.setCaretColor(DARK_TEXT);
         add(tituloTextField);
 
-        generoTextField = new JTextField();
-        generoTextField.setBounds(145, 152, 260, 25);
-        generoTextField.setBackground(DARK_FIELD);
-        generoTextField.setForeground(DARK_TEXT);
-        generoTextField.setCaretColor(DARK_TEXT);
-        add(generoTextField);
+        generoComboBox = new JComboBox<>();
 
+        generoComboBox.setBounds(145, 152, 260, 25);
+        generoComboBox.setBackground(DARK_FIELD);
+        generoComboBox.setForeground(DARK_TEXT);
+
+        generoComboBox.setUI(new BasicComboBoxUI() {
+
+            @Override
+            protected JButton createArrowButton() {
+                JButton button = super.createArrowButton();
+
+                button.setBackground(new Color(230, 230, 230)); // branco suave
+                button.setForeground(Color.DARK_GRAY);
+                button.setBorder(null);
+
+                return button;
+            }
+        });
+
+        add(generoComboBox);
+        
         duracaoSpinner = new JSpinner(new SpinnerNumberModel(0, 0, null, 1));
         duracaoSpinner.setBounds(145, 187, 100, 25);
         duracaoSpinner.setBackground(DARK_FIELD);
@@ -99,6 +125,26 @@ public class FilmeView extends JPanel {
             editor.getTextField().setCaretColor(DARK_TEXT);
         }
 
+        JLabel atoresLabel = new JLabel("Atores:");
+        atoresLabel.setBounds(70, 220, 70, 25);
+        atoresLabel.setForeground(DARK_TEXT);
+        add(atoresLabel);
+
+        atoresListModel = new DefaultListModel<>();
+
+        atoresList = new JList<>(atoresListModel);
+        atoresList.setBackground(DARK_FIELD);
+        atoresList.setForeground(DARK_TEXT);
+        atoresList.setSelectionBackground(DARK_ACCENT);
+        atoresList.setSelectionForeground(Color.WHITE);
+        atoresList.setVisibleRowCount(5);
+        atoresList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        
+        
+        JScrollPane scrollAtores = new JScrollPane(atoresList);
+        scrollAtores.setBounds(145, 222, 260, 90);
+        add(scrollAtores);
+        
         novoButton = new JButton("Novo");
         novoButton.setBounds(85, 235, 100, 30);
         novoButton.setBackground(DARK_ACCENT);
@@ -117,10 +163,24 @@ public class FilmeView extends JPanel {
         excluirButton.setForeground(Color.WHITE);
         add(excluirButton);
 
-        filmesTableModel = new DefaultTableModel(new Object[] { "ID", "Título", "Gênero", "Duração" }, 0);
+        novoButton.setBounds(85, 330, 100, 30);
+        salvarButton.setBounds(205, 330, 100, 30);
+        excluirButton.setBounds(325, 330, 100, 30);
+        
+        filmesTableModel = new DefaultTableModel(
+        	    new Object[] { "ID", "Título", "Gênero", "Duração", "Qtd. Atores" }, 0) {
+        	
+        	@Override
+            public boolean isCellEditable(int row, int column) {
+        		 return false;
+            }
+        };
+        
+        
+        
         filmestable = new JTable(filmesTableModel);
         filmestable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        filmestable.setBounds(30, 280, 455, 70);
+        filmestable.setBounds(30, 380, 455, 120);
         filmestable.setBackground(DARK_PANEL);
         filmestable.setForeground(DARK_TEXT);
         filmestable.setSelectionBackground(DARK_ACCENT);
@@ -128,7 +188,23 @@ public class FilmeView extends JPanel {
         add(filmestable);
     }
 
-    public void mostrarErro(String mensagem) {
+    public JList<Atores> getAtoresList() {
+		return atoresList;
+	}
+
+	public void setAtoresList(JList<Atores> atoresList) {
+		this.atoresList = atoresList;
+	}
+
+	public DefaultListModel<Atores> getAtoresListModel() {
+		return atoresListModel;
+	}
+
+	public void setAtoresListModel(DefaultListModel<Atores> atoresListModel) {
+		this.atoresListModel = atoresListModel;
+	}
+
+	public void mostrarErro(String mensagem) {
         JOptionPane.showMessageDialog(this, mensagem, "Erro no cadastro de filme", JOptionPane.ERROR_MESSAGE);
     }
 
@@ -136,7 +212,7 @@ public class FilmeView extends JPanel {
     public JButton getSalvarButton() { return salvarButton; }
     public JButton getExcluirButton() { return excluirButton; }
     public JTextField getTituloTextField() { return tituloTextField; }
-    public JTextField getGeneroTextField() { return generoTextField; }
+    public JComboBox<Genero> getGeneroComboBox() { return generoComboBox; }
     public JSpinner getDuracaoSpinner() { return duracaoSpinner; }
     public JTable getFilmestable() { return filmestable; }
     public DefaultTableModel getFilmesTableModel() { return filmesTableModel; }

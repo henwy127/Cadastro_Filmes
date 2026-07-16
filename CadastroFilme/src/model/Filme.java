@@ -1,12 +1,23 @@
 package model;
 
+import java.util.List;
+
 public class Filme {
 	private Integer id;
     private String titulo;
-    private String genero;
+    private Genero genero;
     private Integer duracao;
+    private List<Atores> Atores;
     
     
+	public List<Atores> getAtores() {
+		return Atores;
+	}
+
+	public void setAtores(List<Atores> atores) {
+		Atores = atores;
+	}
+
 	public Integer getId() {
 		return id;
 	}
@@ -21,10 +32,10 @@ public class Filme {
 	public void setTitulo(String titulo) {
 		this.titulo = titulo;
 	}
-	public String getGenero() {
+	public Genero getGenero() {
 		return genero;
 	}
-	public void setGenero(String genero) {
+	public void setGenero(Genero genero) {
 		this.genero = genero;
 	}
 	public Integer getDuracao() {

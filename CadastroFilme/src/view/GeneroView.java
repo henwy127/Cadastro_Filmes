@@ -85,7 +85,13 @@ public class GeneroView extends JPanel {
         excluirButton.setForeground(Color.WHITE);
         add(excluirButton);
 
-        generosTableModel = new DefaultTableModel(new Object[] { "ID", "Nome" }, 0);
+        generosTableModel = new DefaultTableModel(new Object[] { "ID", "Nome" }, 0) {
+        	
+        	@Override
+            public boolean isCellEditable(int row, int column) {
+        		 return false;
+            }
+        };
         generosTable = new JTable(generosTableModel);
         generosTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         generosTable.setBounds(30, 245, 455, 105);

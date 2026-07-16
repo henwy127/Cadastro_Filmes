@@ -1,23 +1,38 @@
 package controller;
 
+import java.util.List;
+
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import model.Atores;
 import model.Filme;
+import model.Genero;
+import repository.AtoresRepository;
 import repository.FilmeRepository;
+import repository.GeneroRepository;
 import view.FilmeView;
 
 
 public class FilmeController {
 	private FilmeView view;
 	private FilmeRepository repository;
+	private GeneroRepository generoRepository;
+	private AtoresRepository atoresRepository;
 
-	public FilmeController(FilmeView view, FilmeRepository repository) {
+	public FilmeController(FilmeView view,
+			FilmeRepository repository,
+			GeneroRepository generoRepository,
+			AtoresRepository atoresRepository) {
 		super();
 		this.view = view;
 		this.repository = repository;
+		this.generoRepository = generoRepository;
+		this.atoresRepository = atoresRepository;
 		
+		carregarAtores();
+		carregarGeneros();
 		configurarEventos();
 	}
 	
@@ -51,43 +66,110 @@ public class FilmeController {
 		
 	}
 
-public void carregarFilmeSelecionado() {
-	int LinhaSelecionada = view.getFilmestable().getSelectedRow();
-	
-	if (LinhaSelecionada < 0) {
-        return;
-    }
+	private void carregarGeneros() {
+	    view.getGeneroComboBox().removeAllItems();
 
-	 int linhaModelo = view.getFilmestable().convertRowIndexToModel(LinhaSelecionada);
-	    Integer id = (Integer) view.getFilmesTableModel().getValueAt(linhaModelo, 0);
-	    String titulo = (String) view.getFilmesTableModel().getValueAt(linhaModelo, 1);
-	    String genero = (String) view.getFilmesTableModel().getValueAt(linhaModelo, 2);
-	    Integer duracao = (Integer) view.getFilmesTableModel().getValueAt(linhaModelo, 3);
+	    for (Genero genero : generoRepository.listarTodos()) {
+	        view.getGeneroComboBox().addItem(genero);
+	    }
+	}
 	
-	    view.getTextField().setText(id != null ? String.valueOf(id) : "");
-	    view.getTituloTextField().setText(titulo != null ? titulo : "");
-	    view.getGeneroTextField().setText(genero != null ? genero : "");
-	    view.getDuracaoSpinner().setValue(duracao != null ? duracao : 0);
-}
+	private void carregarAtores() {
+
+	    view.getAtoresListModel().clear();
+
+	    for (Atores ator : atoresRepository.listarTodos()) {
+	        view.getAtoresListModel().addElement(ator);
+	    }
+	}
+	
+	public void atualizarComboGeneros() {
+        carregarGeneros();
+    }
+	
+	public void atualizarListaAtores() {
+	    carregarAtores();
+	}
+	
+	public void carregarFilmeSelecionado() {
+
+	    int linhaSelecionada = view.getFilmestable().getSelectedRow();
+
+	    if(linhaSelecionada < 0)
+	        return;
+
+
+	    int linhaModelo =
+	        view.getFilmestable().convertRowIndexToModel(linhaSelecionada);
+
+	    
+
+	        Integer id = (Integer)view.getFilmesTableModel().getValueAt(linhaModelo,0);
+	        String titulo = (String) view.getFilmesTableModel().getValueAt(linhaModelo, 1);
+	        Genero genero = (Genero) view.getFilmesTableModel().getValueAt(linhaModelo, 2);
+	        Integer duracao = (Integer) view.getFilmesTableModel().getValueAt(linhaModelo, 3);
+
+	        view.getIDtextField().setText(id != null ? String.valueOf(id) : "");
+	        view.getTituloTextField().setText(titulo != null ? titulo : "");
+	        view.getGeneroComboBox().setSelectedItem(genero);
+	        view.getDuracaoSpinner().setValue(duracao != null ? duracao : 0);
+	        
+	    Filme filme = repository.buscarPorId(id);
+
+	    view.getTituloTextField()
+	        .setText(filme.getTitulo());
+
+	    view.getGeneroComboBox()
+	        .setSelectedItem(filme.getGenero());
+
+	    view.getDuracaoSpinner()
+	        .setValue(filme.getDuracao());
+
+	    view.getAtoresList().clearSelection();
+	    for(Atores ator : filme.getAtores()){
+
+	        int indice =
+	            view.getAtoresListModel()
+	                .indexOf(ator);
+
+	        if(indice >= 0){
+	            view.getAtoresList()
+	                .addSelectionInterval(indice, indice);
+	        }
+	    }
+	}
 	
 	public void salvarFilme(){
 		Filme filme = new Filme();
 		
 		String idTexto = view.getTextField().getText().trim();
 		String titulo = view.getTituloTextField().getText();
-        String genero = view.getGeneroTextField().getText();
+		Genero genero = (Genero) view.getGeneroComboBox().getSelectedItem();
+		
+		 List<Atores> atoresSelecionados =
+		            view.getAtoresList().getSelectedValuesList();
+		
+		if(atoresSelecionados.isEmpty()) {
+	        throw new IllegalArgumentException(
+	            "O filme deve possuir pelo menos um ator."
+	        );
+	    }
         
         if(titulo == null || titulo.isBlank()) {
         	throw new IllegalArgumentException("Preencha o título corretamente.");
         }
         
-        if(genero == null || genero.isBlank()) {
-        	throw new IllegalArgumentException("Preencha o gênero corretamente.");
+        if(genero == null) {
+        	throw new IllegalArgumentException("Selecione um gênero para o filme.");
         }
         
 		filme.setTitulo(titulo);
 		filme.setGenero(genero);
 		filme.setDuracao((Integer)view.getDuracaoSpinner().getValue());
+		
+		 filme.setAtores(
+			        view.getAtoresList().getSelectedValuesList()
+			    );
 		
 		if (idTexto.isEmpty()) {
 		    repository.adicionar(filme);
@@ -104,19 +186,26 @@ public void carregarFilmeSelecionado() {
 	
 	public void limparCampos() {
 		this.view.getTituloTextField().setText("");
-		this.view.getGeneroTextField().setText("");
+		this.view.getGeneroComboBox().setSelectedIndex(0);
 		this.view.getDuracaoSpinner().setValue(0);
 		this.view.getIDtextField().setText(null);
+		this.view.getAtoresList().clearSelection();
 	}
 	
 	public void montarTabela() {
 		view.getFilmesTableModel().setRowCount(0);
 		
 		for(Filme f : repository.listarTodos()) {
-			view.getFilmesTableModel().addRow(
-					new Object[] {f.getId(), f.getTitulo(), f.getGenero(), f.getDuracao()}
-					
-					);
+
+		    view.getFilmesTableModel().addRow(
+		        new Object[] {
+		            f.getId(),
+		            f.getTitulo(),
+		            f.getGenero(),
+		            f.getDuracao(),
+		            f.getAtores().size()
+		        }
+		    );
 		}
 	}
 	
